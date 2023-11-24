@@ -1,4 +1,4 @@
-import pickle
+import json
 
 class Tarea:
     def __init__(self, descripcion, fecha_limite, estado):
@@ -48,14 +48,41 @@ class ListaEnlazada:
                 return
             actual = actual.siguiente
 
+    def to_dict(self):
+        data = []
+        actual = self.inicio
+        while actual:
+            tarea_dict = {
+                "descripcion": actual.descripcion,
+                "fecha_limite": actual.fecha_limite,
+                "estado": actual.estado
+            }
+            data.append(tarea_dict)
+            actual = actual.siguiente
+        return data
+
+    def from_dict(self, data):
+        for tarea_dict in data:
+            tarea = Tarea(
+                tarea_dict["descripcion"],
+                tarea_dict["fecha_limite"],
+                tarea_dict["estado"]
+            )
+            self.agregar_tarea(tarea)
+
     def guardar_en_archivo(self, archivo):
-        with open(archivo, 'wb') as f:
-            pickle.dump(self, f)
+        data = self.to_dict()
+        with open(archivo, 'w') as f:
+            json.dump(data, f, indent=2)
 
     def cargar_desde_archivo(self, archivo):
-        with open(archivo, 'rb') as f:
-            lista_cargada = pickle.load(f)
-        self.inicio = lista_cargada.inicio
+        try:
+            with open(archivo, 'r') as f:
+                data = json.load(f)
+            self.from_dict(data)
+            print("Lista de tareas cargada desde el archivo.")
+        except FileNotFoundError:
+            print("Archivo no encontrado. Se creará uno nuevo.")
 
 # Función para ingresar una tarea desde el usuario
 def ingresar_tarea():
@@ -79,11 +106,10 @@ def eliminar_tarea(lista_tareas):
 # Nombre del archivo para almacenar las tareas
 archivo_tareas = "tasks.txt"
 
-## Intentar cargar la lista de tareas desde el archivo
+# Intentar cargar la lista de tareas desde el archivo
 lista_tareas = ListaEnlazada()
 try:
     lista_tareas.cargar_desde_archivo(archivo_tareas)
-    print("Lista de tareas cargada desde el archivo.")
     print("\nTareas después de cargar:")
     lista_tareas.mostrar_tareas()
 except FileNotFoundError:
