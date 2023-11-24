@@ -117,7 +117,7 @@ except FileNotFoundError:
 
 # Menú principal
 while True:
-    print("\n1. Agregar tarea")
+    print("\n1. Agregar tarea enanito verde")
     print("2. Mostrar tareas")
     print("3. Realizar cambios en una tarea")
     print("4. Eliminar tarea")
