@@ -12,7 +12,7 @@ struct encabezado
 struct registro
 {
     int NR, SR, ARE;
-    char nom[50], estado[50];
+    char nom[20], estado[20];
 }n,a,s,r;
 
 FILE *fd;
@@ -21,8 +21,8 @@ int lr = sizeof(struct registro);
 
 void escribir()
 {
-    char rpta; int sgte,pos; bool band;
-    e.NRS = 0; e.PR = -1; e.URE = -1;
+    char rpta; int sgte,pos; bool band, nomRepetido;
+    e.NRS = 0; e.PR = -1; e.URE = -1, n.NR = 0;
 
     if ((fd = fopen("personasALE.txt","w+t")) == NULL)
     {
@@ -34,61 +34,81 @@ void escribir()
 
     do
     {
-        n.NR = ++e.NRS;
         fflush(stdin);
 
-        cout << "Tarea "<< n.NR << endl;
+        cout << "\nTarea "<< n.NR + 1 << endl;
         cout << "Nombre: "; cin >> n.nom;
         cout << "Estado: "; cin >> n.estado;   
-        n.ARE = 0;
+        n.ARE = 0; 
+        sgte = e.PR; nomRepetido = false;
 
-        if (e.PR == -1)
+        while (sgte != -1)
         {
-            n.SR = e.PR;
-            e.PR = n.NR;
-            fwrite(&n, lr, 1, fd);
-        }
-        else
-        {
-            sgte = e.PR; band = false;
+            pos = (sgte - 1) * lr + le;
+            fseek(fd, pos, 0);
+            fread(&s, lr, 1, fd);
 
-            while (sgte != -1)
+            if (strcmp(n.nom, s.nom) == 0)
             {
-                pos = (sgte-1) * lr + le;
-                fseek(fd, pos, 0);
-                fread(&s, lr, 1, fd);
-
-                if (strcmp(n.nom, s.nom) > 0) 
-                {
-                    band = true;
-                    a = s;
-                    sgte = s.SR;
-                    continue;
-                }
+                nomRepetido = true;
+                cout << "Ya existe un registro con el mismo nombre. Ingrese otro nombre." << endl;
                 break;
             }
-            
-            if (band == false)
-            {
-                n.SR = e.PR;
-                e.PR = n.NR;
-            }
-            if (band == true)
-            {
-                n.SR = a.SR;
-                a.SR = n.NR;
 
-                pos = (a.NR-1) * lr + le;
-                fseek(fd, pos, 0);
-                fwrite(&a, lr, 1, fd);
+            sgte = s.SR;
+        }
+
+        if (nomRepetido == false)
+        {
+            n.NR = ++e.NRS;
+            if (e.PR == -1)
+            {
+               n.SR = e.PR;
+                e.PR = n.NR;
+                fwrite(&n, lr, 1, fd);
             }
+            else
+            {
+                sgte = e.PR; band = false;
+
+                while (sgte != -1)
+                {
+                    pos = (sgte-1) * lr + le;
+                    fseek(fd, pos, 0);
+                    fread(&s, lr, 1, fd);
+
+                    if (strcmp(n.nom, s.nom) > 0) 
+                    {
+                        band = true;
+                        a = s;
+                        sgte = s.SR;
+                        continue;
+                    }
+                    break;
+                }
             
-            pos = (n.NR-1) * lr + le;
-            fseek(fd, pos, 0);
-            fwrite(&n, lr, 1, fd);
+                if (band == false)
+                {
+                    n.SR = e.PR;
+                    e.PR = n.NR;
+                }
+                if (band == true)
+                {
+                    n.SR = a.SR;
+                    a.SR = n.NR;
+
+                    pos = (a.NR-1) * lr + le;
+                    fseek(fd, pos, 0);
+                    fwrite(&a, lr, 1, fd);
+                }
+            
+                pos = (n.NR-1) * lr + le;
+                fseek(fd, pos, 0);
+                fwrite(&n, lr, 1, fd);
+            }
         }
         
-        cout << "Desea mas registros?" <<endl; cin >> rpta;         
+        cout << "Desea mas registros? (s/n)" <<endl; cin >> rpta;       
     } while (rpta == 's' || rpta == 'S');
 
     fseek(fd, 0, 0);
@@ -109,6 +129,7 @@ void mostrar()
     fread(&e, le, 1, fd);
     sgte = e.PR;
 
+    cout << "\nTAREAS:" <<endl;
     while (sgte != -1)
     {
         pos = (sgte - 1) * lr + le;
@@ -123,7 +144,7 @@ void mostrar()
 
 void agregar()
 {
-    char rpta; int sgte,pos; bool band;
+    char rpta; int sgte,pos; bool band, nomRepetido;
 
     if ((fd=fopen("personasALE.txt","r+t")) == NULL)
     {
@@ -135,58 +156,82 @@ void agregar()
 
     do
     {
-        n.NR = ++e.NRS;
         fflush(stdin);
-        cout << "Nombre: "; cin >> n.nom;
+        cout << "\nNombre: "; cin >> n.nom;
         cout << "Estado: "; cin >> n.estado;
         n.ARE = 0;
+        sgte = e.PR; nomRepetido = false;
 
-        if (e.PR == -1)
+        while (sgte != -1)
         {
-            n.SR = e.PR;
-            e.PR = n.NR;
-            pos = (n.NR - 1) * lr + le;
+            pos = (sgte - 1) * lr + le;
             fseek(fd, pos, 0);
-            fwrite(&n, lr, 1, fd);
-        }
-        else
-        {
-            sgte = e.PR;
+            fread(&s, lr, 1, fd);
 
-            while (sgte != -1)
+            if (strcmp(n.nom, s.nom) == 0)
             {
-                pos = (sgte - 1) * lr + le;
-                fseek(fd, pos, 0);
-                fread(&s, lr, 1, fd);
-                if (strcmp(n.nom,s.nom) > 0)
-                {
-                    band = true;
-                    a = s;
-                    sgte = s.SR;
-                    continue;
-                }
+                nomRepetido = true;
+                cout << "Ya existe un registro con el mismo nombre. Ingrese otro nombre." << endl;
                 break;
             }
-            
-            if (band == false)
+
+            sgte = s.SR;
+        }
+
+        if (nomRepetido == false)
+        {
+            n.NR = ++e.NRS;
+
+            if (e.PR == -1)
             {
                 n.SR = e.PR;
                 e.PR = n.NR;
-            }
-            
-            if (band == true)
-            {
-                n.SR = a.SR;
-                a.SR = n.NR;
-                pos = (a.NR - 1) * lr + le;
+                pos = (n.NR - 1) * lr + le;
                 fseek(fd, pos, 0);
-                fwrite(&a, lr, 1, fd);
+                fwrite(&n, lr, 1, fd);
             }
+            else
+            {
+                sgte = e.PR;
+
+                while (sgte != -1)
+                {
+                    pos = (sgte - 1) * lr + le;
+                    fseek(fd, pos, 0);
+                    fread(&s, lr, 1, fd);
+                    
+                    if (strcmp(n.nom,s.nom) > 0)
+                    {
+                        band = true;
+                        a = s;
+                        sgte = s.SR;
+                        continue;
+                    }
+                    break;
+                }
             
-            pos = (n.NR - 1) * lr + le;
-            fseek(fd, pos, 0);
-            fwrite(&n, lr, 1, fd);
+                if (band == false)
+                {
+                    n.SR = e.PR;
+                    e.PR = n.NR;
+                }
+            
+                if (band == true)
+                {
+                    n.SR = a.SR;
+                    a.SR = n.NR;
+                    pos = (a.NR - 1) * lr + le;
+                    fseek(fd, pos, 0);
+                    fwrite(&a, lr, 1, fd);
+                }
+            
+                pos = (n.NR - 1) * lr + le;
+                fseek(fd, pos, 0);
+                fwrite(&n, lr, 1, fd);
+            }
         }
+        
+        cout << "Desea mas registros? (s/n)" <<endl; cin >> rpta; 
     } while (rpta == 's' || rpta == 'S');
     
     fseek(fd, 0, 0);
@@ -207,21 +252,21 @@ void eliminar()
     
     fread(&e, le, 1, fd);
     fflush(stdin);
-    cout << "Nombre: "; cin >> nom_eliminado;
+    cout << "\nNombre: "; cin >> nom_eliminado;
 
     while (fread(&r, lr, 1, fd) == 1)
     {
         if(strcmp(nom_eliminado,r.nom) == 0){
             flag = true;
             r.ARE = e.URE;
-            e.URE = r.SR;
+            e.URE = r.NR;
             break;
         }
     }
     
     if (flag == false)
     {
-        cout << "El nombre no existe" << endl;
+        cout << "El nombre no existe." << endl;
         return;
     }
 
@@ -254,6 +299,8 @@ void eliminar()
         pos = (a.NR - 1) * lr + le;
         fseek(fd, pos, 0);
         fwrite(&a, lr, 1, fd);
+
+        cout << "Registro Eliminado" << endl;
     }
     
     pos = (r.NR - 1) * lr + le;
@@ -269,7 +316,7 @@ void buscar()
     char nombre[20]; int sgte, pos; bool encontrado = false;
 
     fflush(stdin);
-    cout << "Ingrese el nombre a buscar: "; cin >> nombre;
+    cout << "\nIngrese el nombre a buscar: "; cin >> nombre;
 
     if ((fd=fopen("personasALE.txt","rt")) == NULL)
     {
@@ -313,7 +360,7 @@ void modificar()
 {
     char nombre[20]; int sgte, pos; bool encontrado = false;
 
-    cout << "Ingrese el nombre a modificar: "; cin >> nombre;
+    cout << "\nIngrese el nombre de la tarea: "; cin >> nombre;
 
     if ((fd = fopen("personasALE.txt", "r+t")) == NULL)
     {
@@ -368,7 +415,7 @@ void ver_archivo()
     }
 
     fread(&e, le, 1, fd);
-    cout << "NRS: " << e.NRS << "\tPR: " << e.PR << "\tURE: " << e.URE << endl; 
+    cout << "\nNRS: " << e.NRS << "\tPR: " << e.PR << "\tURE: " << e.URE << endl; 
     cout << "NR\tNombre\tEstado\tSR\tARE" << endl;
 
     while (fread(&s, lr, 1, fd) == 1)
@@ -381,47 +428,53 @@ int main(int argc, char *argv[])
 {
     int opc = 0;
 
-    cout << "1. Escribir Tareas";
-    cout << "\n2. Mostrar Tareas";
-    cout << "\n3. Agregar Tarea";
-    cout << "\n4. Eliminar Tarea";
-    cout << "\n5. Buscar Tarea";
-    cout << "\n6. Modificar Tarea";
-    cout << "\n7. Ver Archivo";
-    cout << "\n8. Salir" << endl;
-    cin >> opc;
-
-    switch (opc)
+    do
     {
-    case 1:
-        escribir();
-        break;
+        cout << "\nMENU"; 
+        cout << "\n1. Escribir Tareas";
+        cout << "\n2. Mostrar Tareas";
+        cout << "\n3. Agregar Tarea";
+        cout << "\n4. Eliminar Tarea";
+        cout << "\n5. Buscar Tarea";
+        cout << "\n6. Modificar Tarea";
+        cout << "\n7. Ver Archivo";
+        cout << "\n8. Salir";
+        cout << "\nSeleecione una opcion: "; cin >> opc;
 
-    case 2:
-        mostrar();
-        break;
+        switch (opc)
+        {
+        case 1:
+            escribir();
+            break;
 
-    case 3:
-        agregar();
-        break;
+        case 2:
+            mostrar();
+            break;
 
-    case 4:
-        eliminar();
-        break;
+        case 3:
+            agregar();
+            break;
 
-    case 5:
-        buscar();
-        break;
+        case 4:
+            eliminar();
+            break;
 
-    case 6:
-        modificar();
-        break;
+        case 5:
+            buscar();
+            break;
 
-    case 7:
-        ver_archivo();
-        break;
+        case 6:
+            modificar();
+            break;
+
+        case 7:
+            ver_archivo();
+            break;
     
-    default:
-        break;
-    }
+        default:
+            break;
+        }
+    } while (opc != 8);
+
+    return 0;
 }
