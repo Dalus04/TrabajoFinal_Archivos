@@ -113,5 +113,138 @@ def mostrar():
     except pickle.UnpicklingError:
         print("Error al deserializar el archivo.")
 
+def agregar():
+    try:
+        with open("TareasALE.txt", "r+b") as fd:
+            fd.seek(0)
+            e = pickle.load(fd)
+
+            while True:
+                n.nom = input("Nombre: ")
+                n.estado = input("Estado: ")
+                n.ARE = 0
+                sgte = e.PR 
+                nomRepetido = False
+
+                if nomRepetido == False:
+                    e.NRS += 1
+                    n.NR = e.NRS
+
+                    if e.PR == -1:
+                        n.SR = e.PR
+                        e.PR = n.NR
+                        pos = (n.NR - 1) * lr + le
+                        fd.seek(pos)
+                        pickle.dump(n, fd)
+                    else:
+                        sgte = e.PR
+                        band = False
+
+                        while (sgte != -1):
+                            pos = (sgte - 1) * lr + le
+                            fd.seek(pos)
+                            s = pickle.load(fd)
+
+                            if (n.nom > s.nom):
+                                band = True
+                                a = s
+                                sgte = s.SR
+                                continue
+                            break
+
+                        if band == False:
+                            n.SR = e.PR
+                            e.PR = n.NR
+
+                        if band == True:
+                            n.SR = a.SR
+                            a.SR = n.NR
+                            pos = (a.NR - 1) * lr + le
+                            fd.seek(pos)
+                            pickle.dump(a, fd)
+
+                        pos = (n.NR - 1) * lr + le
+                        fd.seek(pos)
+                        pickle.dump(n, fd)
+
+                rpta = input("Desea mas registros? (s/n): ")
+                if rpta.lower() != 's':
+                    break
+
+            fd.seek(0)
+            pickle.dump(e, fd)
+
+    except FileNotFoundError:
+        print("El archivo no existe.")
+    except pickle.UnpicklingError:
+        print("Error al deserializar el archivo.")
+
+def eliminar():
+    try:
+        with open("TareasALE.txt", "r+b") as fd:
+            fd.seek(0)
+            e = pickle.load(fd)
+
+            nom_eliminar = input("Nombre de la tarea a eliminar: ")
+            flag = False
+            sgte = e.PR
+
+            while sgte != -1:
+                pos = (sgte - 1) * lr + le
+                fd.seek(pos)
+                r = pickle.load(fd)
+                
+                if nom_eliminar == r.nom:
+                    flag = True
+                    r.ARE = e.URE
+                    e.URE = r.NR
+                    break
+
+                sgte = r.SR
+
+            if flag == False:
+                print("La tarea no existe")
+                
+            sgte = e.PR
+            band = False
+
+            while sgte != -1:
+                pos = (sgte - 1) * lr + le
+                fd.seek(pos)
+                s = pickle.load(fd)
+
+                if r.nom > s.nom:
+                    band = True
+                    a = s
+                    sgte = s.SR
+                    continue
+                break
+
+            if band == False:
+                e.PR = r.SR
+            
+            if band == True:
+                a.SR = r.SR
+                pos = (a.NR - 1) * lr + le
+                fd.seek(pos)
+                pickle.dump(a, fd)
+                print("Tarea Eliminada")
+
+            pos = (r.NR - 1) * lr + le
+            fd.seek(pos)
+            pickle.dump(r, fd)
+
+            fd.seek(0)
+            pickle.dump(e, fd)
+
+    except FileNotFoundError:
+        print("El archivo no existe.")
+    except pickle.UnpicklingError:
+        print("Error al deserializar el archivo.")
+
 #escribir()
+#mostrar()
+#agregar()
+mostrar()
+eliminar()
 mostrar()
