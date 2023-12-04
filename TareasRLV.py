@@ -38,35 +38,35 @@ def eliminar():
             lines = fd.readlines()
 
         with open("TareasRLV.txt", "w") as fd:
+            found = False
             for line in lines:
                 nombre, _ = line.split(";")
-                if nombre != obj:
+                if nombre == obj:
+                    found = True
+                else:
                     fd.write(line)
 
-        print(f"Registro '{obj}' eliminado exitosamente.")
+            if not found:
+                print(f"No se encontró la tarea '{obj}' en el archivo.")
+            else:
+                print(f"Registro '{obj}' eliminado exitosamente.")
+        
     except FileNotFoundError:
         print("Verifique, no se puede abrir el archivo")
 
 def buscar():
     obj = input("\nIngrese el nombre para buscar su registro: ")
-    ext = ""
-    RE = ""
-
+    
     try:
         with open("TareasRLV.txt", "r") as fd:
             print("\nTAREAS:")
-            for k in fd.read():
-                if k != '^':
-                    if k == ';':
-                        print(" ", end="")
-                    else:
-                        ext += k
-                else:
-                    if obj == ext:
-                        print(RE)
-                    ext = ""
-                    RE = ""
-                    print()
+            for line in fd.readlines():
+                nombre, estado = line.split(";")
+                if obj == nombre:
+                    print(line.replace(";", " ").replace("^", "\n").strip())
+                    break
+            else:
+                print(f"No se encontró ninguna tarea con el nombre '{obj}'.")
     except FileNotFoundError:
         print("Verifique, no se puede abrir el archivo")
 
@@ -79,14 +79,20 @@ def modificar():
             lines = fd.readlines()
 
         with open("TareasRLV.txt", "w") as fd:
+            found = False
             for line in lines:
                 nombre, estado = line.split(";")
                 if nombre == obj:
+                    found = True
                     fd.write(f"{nombre};{nuevo_estado}^\n")
                 else:
                     fd.write(line)
 
-        print(f"Tarea '{obj}' modificada exitosamente.")
+            if not found:
+                print(f"No se encontró la tarea '{obj}' en el archivo.")
+            else:
+                print(f"Tarea '{obj}' modificada exitosamente.")
+
     except FileNotFoundError:
         print("Verifique, no se puede abrir el archivo")
 
