@@ -63,7 +63,7 @@ void escribir()
             n.NR = ++e.NRS;
             if (e.PR == -1)
             {
-               n.SR = e.PR;
+                n.SR = e.PR;
                 e.PR = n.NR;
                 fwrite(&n, lr, 1, fd);
             }

@@ -60,6 +60,53 @@ def escribir():
     except IOError:
         print("No se pudo crear el archivo.")
 
+def eliminar():
+    try:
+        with open("personasALEP.txt", "r") as file:
+            lines = file.readlines()
+
+        # Leer el encabezado
+        encabezado_data = lines[0].split()
+        encabezado = Encabezado()
+        encabezado.NRS, encabezado.PR, encabezado.URE = map(int, encabezado_data)
+
+        # Obtener el nombre de la tarea a eliminar
+        nom_eliminado = input("Nombre de la tarea a eliminar: ")
+
+        # Buscar el registro a eliminar y actualizar la lista de registros
+        registros = []
+        flag = False
+        for line in lines[1:]:
+            data = line.split()
+            registro = Registro(int(data[0]), data[1], data[2])
+            registro.SR, registro.ARE = map(int, data[3:5])
+
+            if registro.nom == nom_eliminado:
+                flag = True
+                registro.ARE = encabezado.URE
+                encabezado.URE = registro.NR
+            registros.append(registro)
+
+        if not flag:
+            print("La tarea no existe.")
+            return
+
+        # Verificar si la tarea eliminada es la primera y actualizar PR
+        if registros and registros[0].nom == nom_eliminado:
+            encabezado.PR = registros[0].SR
+
+        # Escribir la información actualizada al archivo
+        with open("personasALEP.txt", "w") as file:
+            file.write(f"{encabezado.NRS} {encabezado.PR} {encabezado.URE}\n")
+            for registro in registros:
+                file.write(f"{registro.NR} {registro.nom} {registro.estado} {registro.SR} {registro.ARE}\n")
+
+        print("Tarea eliminada con éxito.")
+
+    except IOError:
+        print("No se pudo abrir o modificar el archivo.")
+
+
 def ver_archivo():
     try:
         with open("personasALEP.txt", "r") as file:
@@ -81,6 +128,8 @@ def ver_archivo():
 
 def main():
     escribir()
+    ver_archivo()
+    eliminar()
     ver_archivo()
 
 if __name__ == "__main__":
