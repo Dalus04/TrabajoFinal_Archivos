@@ -30,9 +30,7 @@ def escribir():
     n.NR = 0
 
     try:
-        with open("TareasALE.txt", "wb") as fd:
-        #with open("TareasALE.txt", "w") as fd:
-            #fd.write(f"{e.NRS} {e.PR} {e.URE}\n")
+        with open("TareasALE.txt", "wb+") as fd:
             pickle.dump(e, fd)
 
             while True:
@@ -55,45 +53,65 @@ def escribir():
                         sgte = e.PR
                         band = False
 
-                        with open("TareasALE.txt", "rb") as fd:
-                            while sgte != -1:
-                                pos = (sgte - 1) * lr + le
-                                fd.seek(pos)
-                                s = pickle.load(fd)
-                                print(s.nom)
+                        while sgte != -1:
+                            pos = (sgte - 1) * lr + le
+                            fd.seek(pos)
+                            s = pickle.load(fd)
+
+                            if(n.nom > s.nom):
+                                band = True
+                                a = s
+                                sgte = s.SR
+                                continue
+                            break
+
+                        if band == False:
+                            n.SR = e.PR
+                            e.PR = n.NR
+                        
+                        if band == True:
+                            n.SR = a.SR
+                            a.SR = n.NR
+
+                            pos = (a.NR-1) * lr + le
+                            fd.seek(pos)
+                            pickle.dump(a, fd)
+
+                        pos = (n.NR-1) * lr + le
+                        fd.seek(pos)
+                        pickle.dump(n, fd)
+                            
 
                 rpta = input("Desea mas registros? (s/n): ")
                 if rpta.lower() != 's':
-                    break 
+                    break
+
+            fd.seek(0)
+            pickle.dump(e, fd)
 
     except FileNotFoundError:
         print("El archivo no existe.")
     except pickle.UnpicklingError:
         print("Error al deserializar el archivo.")
 
-
-def leer():
+    
+def mostrar():
     try:
         with open("TareasALE.txt", "rb") as fd:
             e = pickle.load(fd)
-            print(f"NRS: {e.NRS}, PR: {e.PR}, URE: {e.URE}")
+            sgte = e.PR
 
-            # Leer la lista de tareas
-            lista_tareas = []
-            while True:
-                try:
-                    tarea = pickle.load(fd)
-                    lista_tareas.append(tarea)
-                except EOFError:
-                    break
-
-            for tarea in lista_tareas:
-                print(f"NR: {tarea.NR}, Nombre: {tarea.nom}, Estado: {tarea.estado}")
+            while sgte != -1:
+                pos = (sgte - 1) * lr + le
+                fd.seek(pos)
+                s = pickle.load(fd)
+                print(f"Nombre: {s.nom}, Estado: {s.estado}")
+                sgte = s.SR
 
     except FileNotFoundError:
         print("El archivo no existe.")
     except pickle.UnpicklingError:
         print("Error al deserializar el archivo.")
 
-escribir()
-#leer()
+#escribir()
+mostrar()
